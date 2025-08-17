@@ -37,7 +37,9 @@ defmodule Plutarchy.Repo.Migrations.CreatePosts do
     create index(:posts, [:visibility])
     create index(:posts, [:inserted_at])
     create index(:posts, [:deleted_at])
+  end
 
+  def up do
     # Full-text search index
     execute "CREATE INDEX posts_search_idx ON posts USING GIN (search_vector)"
 
@@ -55,5 +57,11 @@ defmodule Plutarchy.Repo.Migrations.CreatePosts do
     CREATE TRIGGER update_posts_search_vector BEFORE INSERT OR UPDATE ON posts
     FOR EACH ROW EXECUTE FUNCTION update_posts_search_vector();
     """
+  end
+
+  def down do
+    execute "DROP INDEX IF EXISTS posts_search_idx"
+    execute("DROP TRIGGER IF EXISTS update_posts_search_vector ON posts")
+    execute "DROP FUNCTION IF EXISTS update_posts_search_vector()"
   end
 end
